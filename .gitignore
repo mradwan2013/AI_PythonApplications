@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# Virtual environment
+venv/
+env/
+
+# Hugging Face model cache
+hf_cache/
+
+# IDE files
+.vscode/
+*.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
