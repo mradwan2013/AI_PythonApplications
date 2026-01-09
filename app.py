@@ -1,20 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from transformers import pipeline
+from models import translator, classifier, summarizer, QA,zero_shot
 
 # Create FastAPI app
 app = FastAPI(title="Call HuggingFace Models")
-
-# Load Hugging Face model once (at startup)
-translator = pipeline("translation", model="Helsinki-NLP/opus-mt-ar-en")
-
-classifier = pipeline("text-classification", model="abdulmatinomotoso/English_Grammar_Checker")
-
-summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
-
-QA = pipeline("question-answering", model="distilbert/distilbert-base-cased-distilled-squad")
-
-zero_shot = pipeline(task="zero-shot-classification", model="facebook/bart-large-mnli")
 
 class TextRequest(BaseModel):
     text: str
