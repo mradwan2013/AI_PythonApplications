@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from models import translator, classifier, summarizer, QA,zero_shot
+from models import translator, classifier, summarizer, QA,zero_shot,tokenizer,model,sentence_model,sentence_model2
+from sentence_transformers import util
 
-# Create FastAPI app
+# Create FastAPI app to call Hugging Face models
 app = FastAPI(title="Call HuggingFace Models")
 
 class TextRequest(BaseModel):
@@ -11,6 +12,10 @@ class TextRequest(BaseModel):
 class QuestionAndAnswerRequest(BaseModel):
     text: str
     question: str
+
+class CompareSentences(BaseModel):
+    sentence1: str
+    sentence2: str
 
 # POST Endpoint For text translation
 @app.post("/translate")
@@ -68,3 +73,39 @@ async def zeroShotClassifier(req: TextRequest):
     #print(result)
     return {"result": output}
 
+# POST Endpoint For test tokenizer in Contextual Embedding
+@app.post("/contextEmbedding")
+async def contextEmbedding(req: TextRequest):
+    inputs=tokenizer(req.text, return_tensors="pt")
+    input_ids = inputs['input_ids'][0]
+    token_strings = tokenizer.convert_ids_to_tokens(input_ids)
+    print(token_strings)
+    outputs=model(**inputs)
+    embedding=outputs.last_hidden_state[0][5]
+    #print(len(embedding))
+    #print(embedding[:10])
+    return {"tokens": token_strings,"tokensIds": input_ids.tolist()}
+
+# POST Endpoint For test tokenizer in sentence Embedding
+@app.post("/sentenceEmbedding")
+async def sentenceEmbedding(req: CompareSentences):
+    e1=sentence_model.encode(req.sentence1, convert_to_tensor=True)
+    e2=sentence_model.encode(req.sentence2 , convert_to_tensor=True)
+    similarities=util.cos_sim(e1,e2)
+    similarity_percentage = float(similarities.item()) * 100
+    print(similarity_percentage)
+    print(similarities)
+    print(len(e1))
+    return {"result": round(similarity_percentage, 2)}
+
+# POST Endpoint For test tokenizer in sentence Embedding
+@app.post("/arSentenceEmbedding")
+async def arSentenceEmbedding(req: CompareSentences):
+    e1=sentence_model2.encode(req.sentence1, convert_to_tensor=True)
+    e2=sentence_model2.encode(req.sentence2 , convert_to_tensor=True)
+    similarities=util.cos_sim(e1,e2)
+    similarity_percentage = float(similarities.item()) * 100
+    print(similarity_percentage)
+    print(similarities)
+    print(len(e1))
+    return {"result": round(similarity_percentage, 2)}
